@@ -18,9 +18,8 @@ export default async function DashboardPage() {
         <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
       </div>
 
-      <p className="text-lg text-gray-700">
-        Este dashboard es el resultado de tu registro o inicio de sesión. Aquí
-        puedes ver la información de tu sesión y realizar acciones adicionales.
+      <p className="text-lg text-gray-700 text-center mb-5">
+        This page is protected and only accessible to authenticated users.
       </p>
 
       <div className="bg-white p-6 rounded-lg shadow-lg overflow-auto">
