@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
+import LoginForm from "@/components/form-login";
 
 const LoginPage = () => {
   return (
     <div>
-      LoginPage
-      <Button>Login</Button>
+      <LoginForm />
     </div>
   );
 };
