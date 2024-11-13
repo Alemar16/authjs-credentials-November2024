@@ -55,10 +55,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
-      <footer className="mt-8">
-        <p>Created with enthusiasm by Alemar16</p>
-      </footer>
     </div>
   );
 }
