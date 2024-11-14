@@ -5,13 +5,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+
 pnpm dev
-# or
-bun dev
+
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -20,17 +16,45 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Configuración de Prisma
 
-To learn more about Next.js, take a look at the following resources:
+Para que Prisma funcione correctamente en diferentes entornos, es necesario configurar la variable de entorno `PRISMA_BINARY_TARGETS` con la lista JSON apropiada para cada sistema operativo.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Google IDX
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+En Google IDX, es necesario agregar `debian-openssl-3.0.x` a la lista `binaryTargets` en el archivo `schema.prisma`. Para evitar que este cambio se suba al repositorio y afecte a otros entornos, se utiliza la variable de entorno `PRISMA_BINARY_TARGETS`.
 
-## Deploy on Vercel
+Para configurar Prisma en Google IDX, define la variable de entorno `PRISMA_BINARY_TARGETS` con la siguiente lista JSON:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+PRISMA_BINARY_TARGETS='["native", "debian-openssl-3.0.x"]'
+
+```
+Puedes definir esta variable de entorno en la configuración de IDX o en tu archivo `.bashrc`, `.zshrc` o similar.
+
+### Windows
+
+En Windows, la configuración de `binaryTargets` por defecto es suficiente, por lo que no es necesario definir la variable de entorno `PRISMA_BINARY_TARGETS`.
+
+Si por alguna razón necesitas definirla, utiliza la siguiente lista JSON:
+
+```bash
+
+PRISMA_BINARY_TARGETS='["native"]'
+
+```
+### Otros entornos
+
+Para otros entornos, consulta la documentación de Prisma para obtener la lista JSON apropiada para tu sistema operativo: [enlace a la documentación de Prisma].
+
+### Generar Prisma Client
+
+Después de configurar la variable de entorno `PRISMA_BINARY_TARGETS`, ejecuta el siguiente comando para generar Prisma Client:
+
+```bash
+
+npx prisma generate
+
+```
+Esto generará una versión de Prisma Client que es compatible con tu entorno actual.
