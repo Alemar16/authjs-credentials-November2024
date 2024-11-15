@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import LogoutButton from "@/components/logout-button";
+import LogoutButton from "@/components/logout-button/logout-button";
 
 const AdminPage = async () => {
   const session = await auth();
