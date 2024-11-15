@@ -1,15 +1,14 @@
 import { auth } from "@/auth";
-import LogoutButton from "@/components/logout-button";
 
 export default async function DashboardPage() {
   const session = await auth();
 
   if (!session) {
-    return <div className="flex items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold text-gray-800">
-        No autenticated
-      </h1>
-    </div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <h1 className="text-3xl font-bold text-gray-800">No autenticated</h1>
+      </div>
+    );
   }
 
   return (
@@ -28,9 +27,11 @@ export default async function DashboardPage() {
         </pre>
       </div>
 
-      <div className="mt-8 text-center">
-        <LogoutButton />
-      </div>
+      <p className="mb-4">
+        Cabe destacar que los usuarios con el rol "user" solo podrán ver el
+        contenido del dashboard y no tendrán acceso a la página de
+        administración.
+      </p>
     </div>
   );
 }
