@@ -96,6 +96,14 @@ const FormRegister = () => {
           </Button>
         </form>
       </Form>
+      <div className="mt-4 text-center">
+        <p className="text-gray-600">
+          Already have an account?{" "}
+          <a href="/login" className="text-indigo-600 hover:underline">
+            Login
+          </a>
+        </p>
+      </div>
     </div>
   );
 };
