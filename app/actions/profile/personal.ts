@@ -2,8 +2,7 @@
 
 import { auth } from "@/auth";
 import db from "@/lib/db";
-import { PersonalInfoSchema } from "@/lib/schemas/profile";
-import { Gender } from "@prisma/client";
+import { PersonalInfoSchema } from "@/lib/validations/user";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -19,12 +18,14 @@ export async function getPersonalInfo() {
   const user = await db.user.findUnique({
     where: { id: session.user.id },
     select: {
+      username: true,
       firstName: true,
       lastName: true,
-      dateOfBirth: true,
-      gender: true,
+      bio: true,
       city: true,
       country: true,
+      image: true,
+      gender: true,
     },
   });
 
@@ -32,33 +33,53 @@ export async function getPersonalInfo() {
 }
 
 export async function updatePersonalInfo(values: PersonalInfoFormValues) {
-  const session = await auth();
-  
-  if (!session?.user?.id) {
-    return { error: "Unauthorized" };
-  }
-
   try {
-    const validatedData = PersonalInfoSchema.parse(values);
+    const session = await auth();
 
-    await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        dateOfBirth: validatedData.dateOfBirth,
-        gender: validatedData.gender as Gender,
-        city: validatedData.city,
-        country: validatedData.country,
+    if (!session?.user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const validatedFields = PersonalInfoSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+      return { error: "Invalid fields" };
+    }
+
+    const { username, firstName, lastName, bio, city, country, image, gender } = validatedFields.data;
+
+    const existingUser = await db.user.findUnique({
+      where: {
+        username,
+        NOT: {
+          id: session.user.id,
+        },
       },
     });
 
-    revalidatePath("/dashboard/profile");
+    if (existingUser) {
+      return { error: "Username already taken" };
+    }
+
+    await db.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        username,
+        firstName,
+        lastName,
+        bio,
+        city,
+        country,
+        image,
+        gender,
+      },
+    });
+
+    revalidatePath("/profile");
     return { success: true };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
     return { error: "Something went wrong" };
   }
 }
