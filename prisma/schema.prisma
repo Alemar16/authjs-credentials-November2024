@@ -20,56 +20,6 @@ enum Gender {
   PREFER_NOT_TO_SAY
 }
 
-enum AdminActionType {
-  USER_CREATE
-  USER_UPDATE
-  USER_DELETE
-  USER_ROLE_UPDATE
-  USER_PROFILE_VIEW
-  USER_EXPORT
-  SYSTEM_BACKUP
-}
-
-enum TechRole {
-  FRONTEND
-  BACKEND
-  FULLSTACK
-  DEVOPS
-  DATA_SCIENCE
-  DATA_ENGINEERING
-  MOBILE
-  CLOUD_ARCHITECTURE
-  SECURITY
-  QA_TESTING
-  UI_UX
-  GAME_DEVELOPMENT
-  EMBEDDED_SYSTEMS
-  AI_ML
-  BLOCKCHAIN
-}
-
-enum ProgrammingLanguage {
-  JAVASCRIPT
-  TYPESCRIPT
-  PYTHON
-  JAVA
-  CSHARP
-  CPP
-  RUBY
-  GO
-  RUST
-  SWIFT
-  KOTLIN
-  PHP
-  SCALA
-  R
-  DART
-  LUA
-  HASKELL
-  ELIXIR
-  OTHER
-}
-
 enum Theme {
   light
   dark
@@ -91,59 +41,115 @@ enum ProfileVisibility {
 }
 
 model User {
+  // Campos Core (Requeridos para registro)
   id            String    @id @default(cuid())
-  username      String?   @unique
+  email         String    @unique
+  username      String    @unique
+  password      String
+  emailVerified DateTime?
+
+  // Información Personal (Opcional)
   firstName     String?   
   lastName      String?   
-  email         String    @unique
-  password      String?
-  emailVerified DateTime?
   image         String?
-  role          Role      @default(user)
-
-  // Información personal
-  dateOfBirth   DateTime?
+  bio          String?   @db.Text
   gender        Gender?
+  birthDate     DateTime?
+  
+  // Información de Contacto (Opcional)
+  phoneNumber   String?
+  address       String?
   city          String?
+  state         String?
   country       String?
+  postalCode    String?
 
-  // Información de contacto
-  phone         String?
-  phoneCountry  String?   // Código de país para el teléfono
-  backupEmail   String?   
+  // Información Profesional (Opcional)
+  title         String?
+  languages     String[]  @default([])
+  certifications String[] @default([])
+  
+  // Preferencias del Sistema
+  role          Role      @default(user)
+  theme         Theme     @default(system)
+  language      Language  @default(en)
+  visibility    ProfileVisibility @default(public)
+  
+  // Estado del Usuario y Eliminación Suave
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
+  deletedBy     String?   // ID del admin que eliminó el usuario
+  
+  // Relaciones de Autenticación
+  accounts      Account[]
+  sessions      Session[]
 
-  // URLs de redes sociales (solo campos para almacenar las URLs)
-  githubUrl     String?
-  linkedinUrl   String?
-  facebookUrl   String?
-  instagramUrl  String?
-
-  // Información profesional
-  primaryRole       TechRole[]           @default([])
-  programmingLanguages ProgrammingLanguage[] @default([])
-  yearsOfExperience Int?                
-  portfolioUrl      String?             
-
-  // Preferencias
-  theme               Theme           @default(system)
-  language            Language        @default(en)
-  securityAlerts      Boolean         @default(true)
-  updateNotifications Boolean         @default(true)
-  marketingEmails     Boolean         @default(false)
-  profileVisibility   ProfileVisibility @default(public)
-
-  // Metadatos
+  // Relaciones de Información Profesional
+  education     Education[]
+  experience    Experience[]
+  skills        Skill[]
+  
+  // Campos de Auditoría
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  lastLoginAt   DateTime?
-  isActive      Boolean   @default(true)
 
-  // Relaciones
-  accounts      Account[]
-  actionsAsAdmin AdminLog[] @relation("AdminActions")
-  actionsOnUser  AdminLog[] @relation("TargetUser")
-  backups       UserBackup[]
-  sessions      Session[]
+  @@map("users")
+}
+
+model Education {
+  id           String    @id @default(cuid())
+  institution  String
+  degree       String
+  field        String?
+  startDate    DateTime
+  endDate      DateTime?
+  current      Boolean   @default(false)
+  description  String?
+  
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("educations")
+}
+
+model Experience {
+  id              String    @id @default(cuid())
+  company         String
+  position        String
+  startDate       DateTime
+  endDate         DateTime?
+  current         Boolean   @default(false)
+  responsibilities String[]
+  technologies    String[]
+  description     String?
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("experiences")
+}
+
+model Skill {
+  id                String  @id @default(cuid())
+  name              String
+  level             String  // beginner, intermediate, advanced, expert
+  yearsOfExperience Int?
+  category          String  // technical, soft
+  endorsements      Int     @default(0)
+  
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("skills")
 }
 
 model Account {
@@ -159,50 +165,11 @@ model Account {
   scope             String?
   id_token          String?  @db.Text
   session_state     String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-}
-
-model AdminLog {
-  id          String          @id @default(cuid())
-  actionType  AdminActionType
-  details     String?         @db.Text
-  metadata    Json?
-  createdAt   DateTime        @default(now())
-  
-  // Relaciones
-  adminId     String
-  admin       User            @relation("AdminActions", fields: [adminId], references: [id])
-  targetUserId String?
-  targetUser  User?           @relation("TargetUser", fields: [targetUserId], references: [id])
-
-  @@index([actionType])
-  @@index([adminId])
-  @@index([targetUserId])
-}
-
-model UserBackup {
-  id        String   @id @default(cuid())
-  userId    String
-  data      Json
-  reason    String?
-  createdAt DateTime @default(now())
-  
-  // Relación
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+  @@map("accounts")
 }
 
 model Session {
@@ -211,4 +178,15 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
 }
