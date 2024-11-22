@@ -30,20 +30,32 @@ import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
 import { cn } from "@/lib/utils"
 import { TechRole, ProgrammingLanguage } from "@/types/enums"
 import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import { ProfessionalInfoSchema } from "@/lib/schemas/professional"
+import { useToast } from "@/components/ui/use-toast"
+import { useTransition } from "react"
+import { getProfessionalInfo, updateProfessionalInfo } from "@/app/actions/profile/professional"
 
-const professionalSchema = z.object({
-  primaryRoles: z.array(z.nativeEnum(TechRole)).min(1, "Select at least one role"),
-  programmingLanguages: z.array(z.nativeEnum(ProgrammingLanguage)).min(1, "Select at least one language"),
-  yearsOfExperience: z.number().min(0).max(50),
-  portfolioUrl: z.string().url("Invalid URL").optional(),
-})
+type ProfessionalValues = z.infer<typeof ProfessionalInfoSchema>
 
-type ProfessionalValues = z.infer<typeof professionalSchema>
+interface ProfessionalFormProps {
+  initialData?: ProfessionalValues
+}
 
-export function ProfessionalForm() {
+export function ProfessionalForm({ initialData }: ProfessionalFormProps) {
+  const [isPending, startTransition] = useTransition()
+  const { toast } = useToast()
+
   const form = useForm<ProfessionalValues>({
-    resolver: zodResolver(professionalSchema),
-    defaultValues: {
+    resolver: zodResolver(ProfessionalInfoSchema),
+    defaultValues: initialData || {
+      title: "",
+      bio: "",
+      education: [],
+      experience: [],
+      skills: [],
+      languages: [],
+      certifications: [],
       primaryRoles: [],
       programmingLanguages: [],
       yearsOfExperience: 0,
@@ -52,17 +64,71 @@ export function ProfessionalForm() {
   })
 
   async function onSubmit(data: ProfessionalValues) {
-    try {
-      // TODO: Implement API call to update professional info
-      console.log(data)
-    } catch (error) {
-      console.error("Error updating professional info:", error)
-    }
+    startTransition(async () => {
+      try {
+        const result = await updateProfessionalInfo(data)
+        
+        if (result.error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: result.error,
+          })
+          return
+        }
+
+        toast({
+          title: "Success",
+          description: "Professional information updated successfully",
+        })
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        })
+      }
+    })
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Professional Title</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Senior Software Engineer" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Professional Bio</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Write a brief description about your professional background..."
+                  className="resize-none"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Write a brief description about your professional background and expertise.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="primaryRoles"
@@ -92,7 +158,7 @@ export function ProfessionalForm() {
                     <CommandInput placeholder="Search roles..." className="h-9" />
                     <CommandEmpty>No role found.</CommandEmpty>
                     <CommandGroup className="max-h-64 overflow-auto">
-                      {Object.values(TechRole).map((role) => (
+                      {Object.values(TechRole).map((role: TechRole) => (
                         <CommandItem
                           key={role}
                           onSelect={() => {
@@ -159,7 +225,7 @@ export function ProfessionalForm() {
                     <CommandInput placeholder="Search languages..." className="h-9" />
                     <CommandEmpty>No language found.</CommandEmpty>
                     <CommandGroup className="max-h-64 overflow-auto">
-                      {Object.values(ProgrammingLanguage).map((lang) => (
+                      {Object.values(ProgrammingLanguage).map((lang: ProgrammingLanguage) => (
                         <CommandItem
                           key={lang}
                           onSelect={() => {
@@ -197,49 +263,42 @@ export function ProfessionalForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="yearsOfExperience"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Years of Experience</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="0"
-                  max="50"
-                  {...field}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="yearsOfExperience"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Years of Experience</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="portfolioUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Portfolio URL</FormLabel>
-              <FormControl>
-                <Input
-                  type="url"
-                  placeholder="https://your-portfolio.com"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Share your personal website or portfolio
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="portfolioUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Portfolio URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://your-portfolio.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        <Button type="submit" className="w-full">
-          Save Professional Information
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : "Save Changes"}
         </Button>
       </form>
     </Form>
