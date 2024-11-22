@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 const Footer = () => {
   return (
@@ -12,7 +13,13 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-gray-400"
           >
-            <img src="/images/notion.svg" alt="Notion" className="w-6 h-6" />
+            <Image
+              src="/images/notion.svg"
+              alt="Notion"
+              width={24}
+              height={24}
+              priority={false}
+            />
           </a>
           <a
             href="https://github.com"
@@ -20,7 +27,13 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-gray-400"
           >
-            <img src="/images/github.svg" alt="Notion" className="w-6 h-6" />
+            <Image
+              src="/images/github.svg"
+              alt="GitHub"
+              width={24}
+              height={24}
+              priority={false}
+            />
           </a>
         </div>
       </div>
