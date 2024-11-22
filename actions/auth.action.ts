@@ -6,6 +6,7 @@ import { loginSchema, registerSchema } from "@/lib/zod";
 import { AuthError } from "next-auth";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { Role } from "@/types/enums";
 
 export const loginAction = async (values: z.infer<typeof loginSchema>) => {
   try {
@@ -49,14 +50,16 @@ export const registerAction = async (
     //hash password
     const passwordHash = await bcrypt.hash(data.password, 10);
 
-    // Create user
-    await db.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: passwordHash,
-      },
-    });
+// Create user
+await db.user.create({
+  data: {
+    firstName: data.name,
+    email: data.email,
+    password: passwordHash,
+    username: data.username || data.name,
+    role: Role.user,
+  },
+});
     // Sign in user
     await signIn("credentials", {
       email: data.email,
