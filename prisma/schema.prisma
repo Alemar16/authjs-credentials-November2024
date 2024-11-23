@@ -40,6 +40,47 @@ enum ProfileVisibility {
   contacts
 }
 
+enum TechRole {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+  DEVOPS
+  DATA_SCIENCE
+  DATA_ENGINEERING
+  MOBILE
+  CLOUD_ARCHITECTURE
+  SECURITY
+  QA_TESTING
+  UI_UX
+  GAME_DEVELOPMENT
+  EMBEDDED_SYSTEMS
+  AI_ML
+  BLOCKCHAIN
+}
+
+enum ProgrammingLanguage {
+  JAVASCRIPT
+  TYPESCRIPT
+  PYTHON
+  JAVA
+  CSHARP
+  CPP
+  RUBY
+  GO
+  RUST
+  SWIFT
+  KOTLIN
+  PHP
+  SCALA
+  DART
+  LUA
+  HASKELL
+  ELIXIR
+  CLOJURE
+  R
+  MATLAB
+}
+
 model User {
   // Campos Core (Requeridos para registro)
   id            String    @id @default(cuid())
@@ -68,6 +109,10 @@ model User {
   title         String?
   languages     String[]  @default([])
   certifications String[] @default([])
+  primaryRoles  TechRole[]  @default([])
+  programmingLanguages ProgrammingLanguage[] @default([])
+  yearsOfExperience Int? 
+  portfolioUrl String?
   
   // Preferencias del Sistema
   role          Role      @default(user)

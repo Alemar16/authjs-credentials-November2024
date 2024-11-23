@@ -1,4 +1,5 @@
 import * as z from "zod"
+import { TechRole, ProgrammingLanguage } from "@/types/enums"
 
 export const EducationSchema = z.object({
   institution: z.string().min(2, "Institution name must be at least 2 characters"),
@@ -29,9 +30,13 @@ export const SkillSchema = z.object({
 export const ProfessionalInfoSchema = z.object({
   title: z.string().min(2, "Professional title must be at least 2 characters"),
   bio: z.string().min(10, "Bio must be at least 10 characters").max(500, "Bio must not exceed 500 characters"),
-  education: z.array(EducationSchema).optional(),
-  experience: z.array(ExperienceSchema).optional(),
-  skills: z.array(SkillSchema).optional(),
-  languages: z.array(z.string()).optional(),
-  certifications: z.array(z.string()).optional(),
+  education: z.array(EducationSchema).default([]),
+  experience: z.array(ExperienceSchema).default([]),
+  skills: z.array(SkillSchema).default([]),
+  languages: z.array(z.string()).default([]),
+  certifications: z.array(z.string()).default([]),
+  primaryRoles: z.array(z.nativeEnum(TechRole)).default([]),
+  programmingLanguages: z.array(z.nativeEnum(ProgrammingLanguage)).default([]),
+  yearsOfExperience: z.number().min(0).default(0),
+  portfolioUrl: z.string().url().optional().or(z.literal("")).default(""),
 })
