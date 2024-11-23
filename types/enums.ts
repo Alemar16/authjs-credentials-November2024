@@ -1,0 +1,62 @@
+// Estos enums deben coincidir con los definidos en schema.prisma
+export enum Gender {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  OTHER = "OTHER",
+  PREFER_NOT_TO_SAY = "PREFER_NOT_TO_SAY"
+}
+
+export enum Role {
+  admin = "admin",
+  user = "user"
+}
+
+export enum AdminActionType {
+  USER_CREATE = "USER_CREATE",
+  USER_UPDATE = "USER_UPDATE",
+  USER_DELETE = "USER_DELETE",
+  USER_ROLE_UPDATE = "USER_ROLE_UPDATE",
+  USER_PROFILE_VIEW = "USER_PROFILE_VIEW",
+  USER_EXPORT = "USER_EXPORT",
+  SYSTEM_BACKUP = "SYSTEM_BACKUP"
+}
+
+export enum TechRole {
+  FRONTEND = "FRONTEND",
+  BACKEND = "BACKEND",
+  FULLSTACK = "FULLSTACK",
+  DEVOPS = "DEVOPS",
+  DATA_SCIENCE = "DATA_SCIENCE",
+  DATA_ENGINEERING = "DATA_ENGINEERING",
+  MOBILE = "MOBILE",
+  CLOUD_ARCHITECTURE = "CLOUD_ARCHITECTURE",
+  SECURITY = "SECURITY",
+  QA_TESTING = "QA_TESTING",
+  UI_UX = "UI_UX",
+  GAME_DEVELOPMENT = "GAME_DEVELOPMENT",
+  EMBEDDED_SYSTEMS = "EMBEDDED_SYSTEMS",
+  AI_ML = "AI_ML",
+  BLOCKCHAIN = "BLOCKCHAIN"
+}
+
+export enum ProgrammingLanguage {
+  JAVASCRIPT = "JAVASCRIPT",
+  TYPESCRIPT = "TYPESCRIPT",
+  PYTHON = "PYTHON",
+  JAVA = "JAVA",
+  CSHARP = "CSHARP",
+  CPP = "CPP",
+  RUBY = "RUBY",
+  GO = "GO",
+  RUST = "RUST",
+  SWIFT = "SWIFT",
+  KOTLIN = "KOTLIN",
+  PHP = "PHP",
+  SCALA = "SCALA",
+  R = "R",
+  DART = "DART",
+  LUA = "LUA",
+  HASKELL = "HASKELL",
+  ELIXIR = "ELIXIR",
+  OTHER = "OTHER"
+}
