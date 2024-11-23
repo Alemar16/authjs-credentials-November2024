@@ -19,6 +19,7 @@ import { getProfessionalInfo } from "@/app/actions/profile/professional";
 import { Separator } from "@/components/ui/separator";
 import { Education, Experience, Skill } from "@prisma/client";
 import { ProfessionalInfoSchema } from "@/lib/schemas/professional";
+import { TechRole, ProgrammingLanguage } from "@/types/enums";
 import { z } from "zod";
 
 interface ProfilePageProps {
@@ -35,6 +36,10 @@ interface ProfessionalInfo {
   skills: Skill[];
   languages: string[];
   certifications: string[];
+  primaryRoles: TechRole[];
+  programmingLanguages: ProgrammingLanguage[];
+  yearsOfExperience: number | null;
+  portfolioUrl: string | null;
 }
 
 export default async function ProfilePage({
@@ -65,10 +70,10 @@ export default async function ProfilePage({
   } : undefined;
 
   // Transform null values to undefined for the professional form
-  const transformedProfessionalInfo: ProfessionalFormValues | undefined = professionalInfo ? {
-    title: professionalInfo.title || "",
-    bio: professionalInfo.bio || "",
-    education: professionalInfo.education?.map(edu => ({
+  const transformedProfessionalInfo: ProfessionalFormValues = {
+    title: professionalInfo?.title || "",
+    bio: professionalInfo?.bio || "",
+    education: professionalInfo?.education?.map(edu => ({
       institution: edu.institution,
       degree: edu.degree,
       field: edu.field || "",
@@ -76,23 +81,27 @@ export default async function ProfilePage({
       endDate: edu.endDate,
       current: edu.current,
       description: edu.description || undefined,
-    })) || undefined,
-    experience: professionalInfo.experience?.map(exp => ({
+    })) || [],
+    experience: professionalInfo?.experience?.map(exp => ({
       company: exp.company,
       position: exp.position,
       startDate: exp.startDate,
       endDate: exp.endDate,
       current: exp.current,
       description: exp.description || undefined,
-    })) || undefined,
-    skills: professionalInfo.skills?.map(skill => ({
+    })) || [],
+    skills: professionalInfo?.skills?.map(skill => ({
       name: skill.name,
       level: skill.level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
       yearsOfExperience: skill.yearsOfExperience || undefined,
-    })) || undefined,
-    languages: professionalInfo.languages || undefined,
-    certifications: professionalInfo.certifications || undefined,
-  } : undefined;
+    })) || [],
+    languages: professionalInfo?.languages || [],
+    certifications: professionalInfo?.certifications || [],
+    primaryRoles: (professionalInfo?.primaryRoles || []) as TechRole[],
+    programmingLanguages: (professionalInfo?.programmingLanguages || []) as ProgrammingLanguage[],
+    yearsOfExperience: professionalInfo?.yearsOfExperience || 0,
+    portfolioUrl: professionalInfo?.portfolioUrl || "",
+  };
 
   // Validar el tab de forma segura
   const validTabs = ["personal", "professional", "security", "contact", "preferences"] as const;

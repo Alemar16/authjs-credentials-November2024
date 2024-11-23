@@ -26,6 +26,10 @@ export async function getProfessionalInfo() {
         skills: true,
         languages: true,
         certifications: true,
+        primaryRoles: true,
+        programmingLanguages: true,
+        yearsOfExperience: true,
+        portfolioUrl: true,
       },
     })
 
@@ -57,13 +61,14 @@ export async function updateProfessionalInfo(
         id: session.user.id,
       },
       data: {
-        title: validatedFields.data.title,
-        bio: validatedFields.data.bio,
-        education: validatedFields.data.education,
-        experience: validatedFields.data.experience,
-        skills: validatedFields.data.skills,
-        languages: validatedFields.data.languages,
-        certifications: validatedFields.data.certifications,
+        title: values.title,
+        bio: values.bio,
+        languages: values.languages || [],
+        certifications: values.certifications || [],
+        primaryRoles: values.primaryRoles || [],
+        programmingLanguages: values.programmingLanguages || [],
+        yearsOfExperience: values.yearsOfExperience,
+        portfolioUrl: values.portfolioUrl,
       },
     })
 
