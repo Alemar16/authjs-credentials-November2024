@@ -14,42 +14,18 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useTransition, useEffect } from "react"
+import { useToast } from "@/components/ui/use-toast"
+import { ContactSchema } from "@/lib/schemas/contact"
+import { updateContactInfo, getContactInfo } from "@/app/actions/profile/contact"
 
-const socialUrlPattern = {
-  github: /^https:\/\/(www\.)?github\.com\/[a-zA-Z0-9-]+\/?$/,
-  linkedin: /^https:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/,
-  facebook: /^https:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]+\/?$/,
-  instagram: /^https:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9_.]+\/?$/,
-}
-
-const contactSchema = z.object({
-  phone: z.string().optional(),
-  phoneCountry: z.string()
-    .regex(/^\+\d{1,3}$/, "Invalid country code (e.g., +1, +44)")
-    .optional(),
-  githubUrl: z.string()
-    .regex(socialUrlPattern.github, "Invalid GitHub URL")
-    .optional()
-    .or(z.literal("")),
-  linkedinUrl: z.string()
-    .regex(socialUrlPattern.linkedin, "Invalid LinkedIn URL")
-    .optional()
-    .or(z.literal("")),
-  facebookUrl: z.string()
-    .regex(socialUrlPattern.facebook, "Invalid Facebook URL")
-    .optional()
-    .or(z.literal("")),
-  instagramUrl: z.string()
-    .regex(socialUrlPattern.instagram, "Invalid Instagram URL")
-    .optional()
-    .or(z.literal("")),
-})
-
-type ContactValues = z.infer<typeof contactSchema>
+type ContactFormValues = z.infer<typeof ContactSchema>
 
 export function ContactForm() {
-  const form = useForm<ContactValues>({
-    resolver: zodResolver(contactSchema),
+  const { toast } = useToast()
+  const [isPending, startTransition] = useTransition()
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(ContactSchema),
     defaultValues: {
       phone: "",
       phoneCountry: "",
@@ -60,13 +36,64 @@ export function ContactForm() {
     },
   })
 
-  async function onSubmit(data: ContactValues) {
-    try {
-      // TODO: Implement API call to update contact info
-      console.log(data)
-    } catch (error) {
-      console.error("Error updating contact info:", error)
+  useEffect(() => {
+    async function loadContactInfo() {
+      const result = await getContactInfo();
+      if (result.success && result.data) {
+        form.reset({
+          phone: result.data.phone ?? "",
+          phoneCountry: result.data.phoneCountry ?? "",
+          githubUrl: result.data.githubUrl ?? "",
+          linkedinUrl: result.data.linkedinUrl ?? "",
+          facebookUrl: result.data.facebookUrl ?? "",
+          instagramUrl: result.data.instagramUrl ?? "",
+        });
+      }
     }
+    loadContactInfo();
+  }, [form]);
+
+  async function onSubmit(data: ContactFormValues) {
+    startTransition(async () => {
+      try {
+        console.log('Enviando datos:', data);
+        
+        const result = await updateContactInfo(data);
+        
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: "Contact information updated successfully",
+          });
+          
+          // Recargar los datos después de guardar
+          const updatedResult = await getContactInfo();
+          if (updatedResult.success && updatedResult.data) {
+            form.reset({
+              phone: updatedResult.data.phone ?? "",
+              phoneCountry: updatedResult.data.phoneCountry ?? "",
+              githubUrl: updatedResult.data.githubUrl ?? "",
+              linkedinUrl: updatedResult.data.linkedinUrl ?? "",
+              facebookUrl: updatedResult.data.facebookUrl ?? "",
+              instagramUrl: updatedResult.data.instagramUrl ?? "",
+            });
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Something went wrong",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Error en el formulario:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update contact information",
+          variant: "destructive",
+        });
+      }
+    });
   }
 
   return (
@@ -177,8 +204,8 @@ export function ContactForm() {
           />
         </div>
 
-        <Button type="submit" className="w-full">
-          Save Contact Information
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Saving..." : "Save Contact Information"}
         </Button>
       </form>
     </Form>
